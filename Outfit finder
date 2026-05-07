@@ -1,0 +1,272 @@
+Instructions 
+
+Find outfit 1st by 1st script than put in 2nd script 
+
+-- Ashu Hub
+-- ULTIMATE AVATAR SCANNER
+-- ACCESSORIES
+-- CLASSIC CLOTHES
+-- BODY PART IDS
+-- BODY SCALES
+
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+local plr = Players.LocalPlayer
+
+---------------------------------------------------
+-- GUI
+---------------------------------------------------
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "AshuUltimateScanner"
+gui.ResetOnSpawn = false
+gui.Parent = gethui and gethui() or game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,360,0,450)
+frame.Position = UDim2.new(0.35,0,0.2,0)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0,170,255)
+stroke.Thickness = 2
+stroke.Parent = frame
+
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,36)
+top.BackgroundColor3 = Color3.fromRGB(28,28,28)
+top.BorderSizePixel = 0
+top.Parent = frame
+
+Instance.new("UICorner",top).CornerRadius = UDim.new(0,12)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,1,0)
+title.BackgroundTransparency = 1
+title.Text = "Ashu Ultimate Scanner"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = top
+
+local scan = Instance.new("TextButton")
+scan.Size = UDim2.new(0.9,0,0,42)
+scan.Position = UDim2.new(0.05,0,0,50)
+scan.BackgroundColor3 = Color3.fromRGB(0,170,255)
+scan.Text = "SCAN AVATAR"
+scan.TextColor3 = Color3.new(1,1,1)
+scan.Font = Enum.Font.GothamBold
+scan.TextSize = 16
+scan.Parent = frame
+
+Instance.new("UICorner",scan)
+
+local copy = Instance.new("TextButton")
+copy.Size = UDim2.new(0.9,0,0,42)
+copy.Position = UDim2.new(0.05,0,0,100)
+copy.BackgroundColor3 = Color3.fromRGB(40,40,40)
+copy.Text = "COPY"
+copy.TextColor3 = Color3.new(1,1,1)
+copy.Font = Enum.Font.GothamBold
+copy.TextSize = 16
+copy.Parent = frame
+
+Instance.new("UICorner",copy)
+
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(0.92,0,0,260)
+box.Position = UDim2.new(0.04,0,0,155)
+box.BackgroundColor3 = Color3.fromRGB(30,30,30)
+box.TextColor3 = Color3.new(1,1,1)
+box.TextXAlignment = Enum.TextXAlignment.Left
+box.TextYAlignment = Enum.TextYAlignment.Top
+box.MultiLine = true
+box.ClearTextOnFocus = false
+box.TextWrapped = false
+box.Font = Enum.Font.Code
+box.TextSize = 14
+box.Text = ""
+box.Parent = frame
+
+Instance.new("UICorner",box)
+
+---------------------------------------------------
+-- HELPERS
+---------------------------------------------------
+
+local RESULT = ""
+
+local function splitIds(str)
+
+	local t = {}
+
+	if not str then
+		return t
+	end
+
+	for id in string.gmatch(str,"%d+") do
+		table.insert(t, tonumber(id))
+	end
+
+	return t
+end
+
+local function extractTemplateId(str)
+
+	if not str then
+		return 0
+	end
+
+	local found = tostring(str):match("%d+")
+
+	if found then
+		return tonumber(found)
+	end
+
+	return 0
+end
+
+---------------------------------------------------
+-- COPY
+---------------------------------------------------
+
+copy.MouseButton1Click:Connect(function()
+
+	if setclipboard then
+		setclipboard(RESULT)
+	end
+
+	pcall(function()
+		StarterGui:SetCore("SendNotification",{
+			Title = "Ashu Hub",
+			Text = "Copied Avatar",
+			Duration = 3
+		})
+	end)
+end)
+
+---------------------------------------------------
+-- SCAN
+---------------------------------------------------
+
+scan.MouseButton1Click:Connect(function()
+
+	local char = plr.Character or plr.CharacterAdded:Wait()
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+
+	if not hum then
+		return
+	end
+
+	local desc = hum:GetAppliedDescription()
+
+	local accessories = {}
+
+	local function add(tbl)
+
+		for _,id in ipairs(tbl) do
+
+			if not table.find(accessories,id) then
+				table.insert(accessories,id)
+			end
+		end
+	end
+
+	---------------------------------------------------
+	-- ACCESSORIES
+	---------------------------------------------------
+
+	pcall(function() add(splitIds(desc.HatAccessory)) end)
+	pcall(function() add(splitIds(desc.HairAccessory)) end)
+	pcall(function() add(splitIds(desc.FaceAccessory)) end)
+	pcall(function() add(splitIds(desc.BackAccessory)) end)
+	pcall(function() add(splitIds(desc.FrontAccessory)) end)
+	pcall(function() add(splitIds(desc.NeckAccessory)) end)
+	pcall(function() add(splitIds(desc.WaistAccessory)) end)
+
+	pcall(function()
+
+		if desc.LeftShoulderAccessory then
+			add(splitIds(desc.LeftShoulderAccessory))
+		end
+
+		if desc.RightShoulderAccessory then
+			add(splitIds(desc.RightShoulderAccessory))
+		end
+	end)
+
+	---------------------------------------------------
+	-- CLOTHES
+	---------------------------------------------------
+
+	local shirtId = 0
+	local pantsId = 0
+
+	local shirt = char:FindFirstChildOfClass("Shirt")
+	local pants = char:FindFirstChildOfClass("Pants")
+
+	if shirt then
+		shirtId = extractTemplateId(shirt.ShirtTemplate)
+	end
+
+	if pants then
+		pantsId = extractTemplateId(pants.PantsTemplate)
+	end
+
+	---------------------------------------------------
+	-- BODY PART IDS
+	---------------------------------------------------
+
+	local body = {
+		Head = desc.Head or 0,
+		Torso = desc.Torso or 0,
+		LeftArm = desc.LeftArm or 0,
+		RightArm = desc.RightArm or 0,
+		LeftLeg = desc.LeftLeg or 0,
+		RightLeg = desc.RightLeg or 0,
+	}
+
+	---------------------------------------------------
+	-- RESULT
+	---------------------------------------------------
+
+	local txt = "Accessories = {\n"
+
+	for _,id in ipairs(accessories) do
+		txt = txt.."    "..id..",\n"
+	end
+
+	txt = txt..
+"}\n\n"..
+"Shirt = "..shirtId.."\n"..
+"Pants = "..pantsId.."\n\n"..
+
+"Body = {\n"..
+"    Head = "..body.Head..",\n"..
+"    Torso = "..body.Torso..",\n"..
+"    LeftArm = "..body.LeftArm..",\n"..
+"    RightArm = "..body.RightArm..",\n"..
+"    LeftLeg = "..body.LeftLeg..",\n"..
+"    RightLeg = "..body.RightLeg.."\n"..
+"}\n\n"..
+
+"Scales = {\n"..
+"    Height = "..desc.HeightScale..",\n"..
+"    Width = "..desc.WidthScale..",\n"..
+"    Depth = "..desc.DepthScale..",\n"..
+"    Head = "..desc.HeadScale.."\n"..
+"}"
+
+	RESULT = txt
+	box.Text = txt
+end)
