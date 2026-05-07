@@ -1,0 +1,476 @@
+-- Ashu Hub
+-- Outfit GUI
+-- AUTO RE-EQUIP FIXED
+-- BUTTONS FIXED AFTER RESET
+
+repeat task.wait() until game:IsLoaded()
+
+local Players = game:GetService("Players")
+
+local plr = Players.LocalPlayer
+local char = plr.Character or plr.CharacterAdded:Wait()
+
+local LastOutfit = nil
+
+---------------------------------------------------
+-- GUI
+---------------------------------------------------
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "AshuHub"
+gui.ResetOnSpawn = false
+gui.Parent = gethui and gethui() or game.CoreGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,260,0,320)
+frame.Position = UDim2.new(0.03,0,0.2,0)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+
+Instance.new("UICorner",frame).CornerRadius = UDim.new(0,12)
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(0,170,255)
+stroke.Thickness = 2
+stroke.Parent = frame
+
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,36)
+top.BackgroundColor3 = Color3.fromRGB(28,28,28)
+top.BorderSizePixel = 0
+top.Parent = frame
+
+Instance.new("UICorner",top).CornerRadius = UDim.new(0,12)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,0,1,0)
+title.BackgroundTransparency = 1
+title.Text = "Ashu Hub"
+title.TextColor3 = Color3.new(1,1,1)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = top
+
+---------------------------------------------------
+-- SCROLL
+---------------------------------------------------
+
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1,-8,1,-44)
+scroll.Position = UDim2.new(0,4,0,40)
+scroll.CanvasSize = UDim2.new(0,0,0,500)
+scroll.ScrollBarThickness = 4
+scroll.BackgroundTransparency = 1
+scroll.Parent = frame
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,5)
+layout.Parent = scroll
+
+---------------------------------------------------
+-- BUTTON MAKER
+---------------------------------------------------
+
+local function makeButton(text)
+
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,-4,0,36)
+	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamBold
+	b.TextSize = 14
+	b.Text = text
+	b.Parent = scroll
+
+	Instance.new("UICorner",b).CornerRadius = UDim.new(0,8)
+
+	return b
+end
+
+---------------------------------------------------
+-- BUTTONS
+---------------------------------------------------
+
+local fit1 = makeButton("8 Bit Cool Fit")
+local fit2 = makeButton("Red E Girl")
+local fit3 = makeButton("Summer Outfit")
+local fit4 = makeButton("Blue Aura :D")
+local fit5 = makeButton("Red Outfit ♥️")
+local clearBtn = makeButton("Remove Accessories")
+
+---------------------------------------------------
+-- CLEAR
+---------------------------------------------------
+
+local function clear()
+
+	for _,v in ipairs(char:GetChildren()) do
+
+		if v:IsA("Accessory")
+		or v:IsA("Shirt")
+		or v:IsA("Pants")
+		or v:IsA("ShirtGraphic") then
+
+			v:Destroy()
+		end
+	end
+
+	for _,v in ipairs(char:GetDescendants()) do
+
+		if v:IsA("WrapLayer")
+		or v:IsA("WrapTarget") then
+
+			pcall(function()
+				v:Destroy()
+			end)
+		end
+	end
+end
+
+---------------------------------------------------
+-- HK
+---------------------------------------------------
+
+local function applyHK()
+
+	local head = char:FindFirstChild("Head")
+
+	if head then
+
+		head.Transparency = 1
+
+		for _,v in ipairs(head:GetChildren()) do
+			if v:IsA("Decal") then
+				v.Transparency = 1
+			end
+		end
+	end
+
+	local limbs = {
+		{"RightLowerLeg",902942093,true},
+		{"RightUpperLeg",902942096,false,902843398},
+		{"RightFoot",902942089,true}
+	}
+
+	for _,info in ipairs(limbs) do
+
+		local p = char:FindFirstChild(info[1])
+
+		if p then
+
+			p.MeshId = "rbxassetid://"..info[2]
+
+			if info[3] then
+				p.Transparency = 1
+			end
+
+			if info[4] then
+				p.TextureID = "rbxassetid://"..info[4]
+			end
+		end
+	end
+end
+
+---------------------------------------------------
+-- ACCESSORY ATTACH
+---------------------------------------------------
+
+local function attachAccessory(acc)
+
+	local handle = acc:FindFirstChild("Handle")
+	if not handle then return end
+
+	handle.Anchored = false
+	handle.CanCollide = false
+	handle.Massless = true
+
+	local attachment = handle:FindFirstChildWhichIsA("Attachment")
+	if not attachment then return end
+
+	for _,part in ipairs(char:GetDescendants()) do
+
+		local charAttachment = part:FindFirstChild(attachment.Name)
+
+		if charAttachment then
+
+			handle.CFrame =
+				charAttachment.WorldCFrame *
+				attachment.CFrame:Inverse()
+
+			local weld = Instance.new("WeldConstraint")
+			weld.Part0 = handle
+			weld.Part1 = part
+			weld.Parent = handle
+
+			acc.Parent = char
+			return
+		end
+	end
+end
+
+---------------------------------------------------
+-- EQUIP
+---------------------------------------------------
+
+local function equip(id)
+
+	task.spawn(function()
+
+		local ok,model = pcall(function()
+			return game:GetObjects("rbxassetid://"..id)
+		end)
+
+		if not ok or not model or not model[1] then
+			return
+		end
+
+		local obj = model[1]
+
+		local accessory
+
+		if obj:IsA("Accessory") then
+			accessory = obj
+		else
+			accessory = obj:FindFirstChildWhichIsA("Accessory",true)
+		end
+
+		if accessory then
+			pcall(function()
+				attachAccessory(accessory)
+			end)
+		end
+	end)
+end
+
+---------------------------------------------------
+-- BODY
+---------------------------------------------------
+
+local function applyBody(body,scales)
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+
+	if hum then
+
+		pcall(function()
+
+			if hum:FindFirstChild("BodyHeightScale") then
+				hum.BodyHeightScale.Value = scales.Height
+			end
+
+			if hum:FindFirstChild("BodyWidthScale") then
+				hum.BodyWidthScale.Value = scales.Width
+			end
+
+			if hum:FindFirstChild("BodyDepthScale") then
+				hum.BodyDepthScale.Value = scales.Depth
+			end
+
+			if hum:FindFirstChild("HeadScale") then
+				hum.HeadScale.Value = scales.Head
+			end
+		end)
+	end
+end
+
+---------------------------------------------------
+-- CLOTHES
+---------------------------------------------------
+
+local function applyClothes(shirtId,pantsId)
+
+	local shirt = Instance.new("Shirt")
+	shirt.ShirtTemplate =
+	"http://www.roblox.com/asset/?id="..shirtId
+	shirt.Parent = char
+
+	local pants = Instance.new("Pants")
+	pants.PantsTemplate =
+	"http://www.roblox.com/asset/?id="..pantsId
+	pants.Parent = char
+end
+
+---------------------------------------------------
+-- APPLY OUTFIT
+---------------------------------------------------
+
+local function applyOutfit(data)
+
+	LastOutfit = data
+
+	clear()
+
+	task.wait(0.1)
+
+	applyHK()
+
+	applyBody(data.Body,data.Scales)
+
+	applyClothes(data.Shirt,data.Pants)
+
+	for _,id in ipairs(data.Accessories) do
+		equip(id)
+		task.wait(0.25)
+	end
+end
+
+---------------------------------------------------
+-- AUTO REAPPLY
+---------------------------------------------------
+
+plr.CharacterAdded:Connect(function(c)
+
+	char = c
+
+	task.wait(1)
+
+	if LastOutfit then
+		applyOutfit(LastOutfit)
+	end
+end)
+
+---------------------------------------------------
+-- OUTFITS
+---------------------------------------------------
+
+local OUTFIT1 = {
+	Accessories = {
+		4508445398,
+		9876444047,
+		10159600649,
+		8966711821,
+		7963401282,
+		8943301323,
+		6659960984,
+		7284677352,
+	},
+	Shirt = 10430815795,
+	Pants = 10430855242,
+	Body = {},
+	Scales = {
+		Height = 0.95,
+		Width = 0.65,
+		Depth = 0.8,
+		Head = 1
+	}
+}
+
+local OUTFIT2 = {
+	Accessories = {
+		96079043,
+		5693879776,
+		215718515,
+		5891039736,
+		5890690147,
+		6008020755,
+		6564177190,
+		6503096465,
+	},
+	Shirt = 14273737107,
+	Pants = 7166623574,
+	Body = {},
+	Scales = {
+		Height = 0.95,
+		Width = 0.75,
+		Depth = 0.9,
+		Head = 0.95
+	}
+}
+
+local OUTFIT3 = {
+	Accessories = {
+		111365997859958,
+		83690827618797,
+		113736149850563,
+		15934949902,
+		92554692810391,
+		137900810957454,
+	},
+	Shirt = 14244022626,
+	Pants = 14268401236,
+	Body = {},
+	Scales = {
+		Height = 1,
+		Width = 0.7,
+		Depth = 0.85,
+		Head = 0.95
+	}
+}
+
+local OUTFIT4 = {
+	Accessories = {
+		493476042,
+		323417812,
+		74891470,
+		4875445470,
+		4527498648,
+		4932554634,
+		5644883846,
+		6413085241,
+		16630147,
+		11748356,
+	},
+	Shirt = 6673310221,
+	Pants = 6927971301,
+	Body = {},
+	Scales = {
+		Height = 0.9,
+		Width = 0.7,
+		Depth = 0.9,
+		Head = 0.95
+	}
+}
+
+local OUTFIT5 = {
+	Accessories = {
+		6545637277,
+		215718515,
+		96079043,
+		7259123616,
+		9665924878,
+		7067588586,
+		7107560513,
+		9722959209,
+		9764302228,
+	},
+	Shirt = 9880015107,
+	Pants = 9820276786,
+	Body = {},
+	Scales = {
+		Height = 0.95,
+		Width = 0.65,
+		Depth = 0.8,
+		Head = 0.95
+	}
+}
+
+---------------------------------------------------
+-- EVENTS
+---------------------------------------------------
+
+fit1.MouseButton1Click:Connect(function()
+	applyOutfit(OUTFIT1)
+end)
+
+fit2.MouseButton1Click:Connect(function()
+	applyOutfit(OUTFIT2)
+end)
+
+fit3.MouseButton1Click:Connect(function()
+	applyOutfit(OUTFIT3)
+end)
+
+fit4.MouseButton1Click:Connect(function()
+	applyOutfit(OUTFIT4)
+end)
+
+fit5.MouseButton1Click:Connect(function()
+	applyOutfit(OUTFIT5)
+end)
+
+clearBtn.MouseButton1Click:Connect(function()
+	clear()
+end)
