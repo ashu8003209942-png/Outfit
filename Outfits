@@ -1,7 +1,9 @@
 -- Ashu Hub
--- Outfit GUI
--- AUTO RE-EQUIP FIXED
--- BUTTONS FIXED AFTER RESET
+-- FULL SCRIPT
+-- MASSIVE LAG FIX VERSION
+-- REAL PARTICLE ACCESSORIES
+-- HEADLESS + KORBLOX
+-- MOBILE FRIENDLY
 
 repeat task.wait() until game:IsLoaded()
 
@@ -22,7 +24,7 @@ gui.ResetOnSpawn = false
 gui.Parent = gethui and gethui() or game.CoreGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0,260,0,320)
+frame.Size = UDim2.new(0,260,0,360)
 frame.Position = UDim2.new(0.03,0,0.2,0)
 frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 frame.BorderSizePixel = 0
@@ -61,7 +63,7 @@ title.Parent = top
 local scroll = Instance.new("ScrollingFrame")
 scroll.Size = UDim2.new(1,-8,1,-44)
 scroll.Position = UDim2.new(0,4,0,40)
-scroll.CanvasSize = UDim2.new(0,0,0,500)
+scroll.CanvasSize = UDim2.new(0,0,0,650)
 scroll.ScrollBarThickness = 4
 scroll.BackgroundTransparency = 1
 scroll.Parent = frame
@@ -94,6 +96,7 @@ end
 -- BUTTONS
 ---------------------------------------------------
 
+local fit0 = makeButton("MAX Particle Fit ✨")
 local fit1 = makeButton("8 Bit Cool Fit")
 local fit2 = makeButton("Red E Girl")
 local fit3 = makeButton("Summer Outfit")
@@ -105,7 +108,7 @@ local clearBtn = makeButton("Remove Accessories")
 -- CLEAR
 ---------------------------------------------------
 
-local function clear()
+local function clearAll()
 
 	for _,v in ipairs(char:GetChildren()) do
 
@@ -117,21 +120,10 @@ local function clear()
 			v:Destroy()
 		end
 	end
-
-	for _,v in ipairs(char:GetDescendants()) do
-
-		if v:IsA("WrapLayer")
-		or v:IsA("WrapTarget") then
-
-			pcall(function()
-				v:Destroy()
-			end)
-		end
-	end
 end
 
 ---------------------------------------------------
--- HK
+-- HEADLESS + KORBLOX
 ---------------------------------------------------
 
 local function applyHK()
@@ -159,7 +151,7 @@ local function applyHK()
 
 		local p = char:FindFirstChild(info[1])
 
-		if p then
+		if p and p:IsA("MeshPart") then
 
 			p.MeshId = "rbxassetid://"..info[2]
 
@@ -249,7 +241,7 @@ end
 -- BODY
 ---------------------------------------------------
 
-local function applyBody(body,scales)
+local function applyBody(scales)
 
 	local hum = char:FindFirstChildOfClass("Humanoid")
 
@@ -282,15 +274,21 @@ end
 
 local function applyClothes(shirtId,pantsId)
 
-	local shirt = Instance.new("Shirt")
-	shirt.ShirtTemplate =
-	"http://www.roblox.com/asset/?id="..shirtId
-	shirt.Parent = char
+	if shirtId then
 
-	local pants = Instance.new("Pants")
-	pants.PantsTemplate =
-	"http://www.roblox.com/asset/?id="..pantsId
-	pants.Parent = char
+		local shirt = Instance.new("Shirt")
+		shirt.ShirtTemplate =
+		"http://www.roblox.com/asset/?id="..shirtId
+		shirt.Parent = char
+	end
+
+	if pantsId then
+
+		local pants = Instance.new("Pants")
+		pants.PantsTemplate =
+		"http://www.roblox.com/asset/?id="..pantsId
+		pants.Parent = char
+	end
 end
 
 ---------------------------------------------------
@@ -301,18 +299,44 @@ local function applyOutfit(data)
 
 	LastOutfit = data
 
-	clear()
+	if data.KeepClothes then
+
+		for _,v in ipairs(char:GetChildren()) do
+
+			if v:IsA("Accessory")
+			or v:IsA("ShirtGraphic") then
+
+				v:Destroy()
+			end
+		end
+
+	else
+
+		clearAll()
+	end
 
 	task.wait(0.1)
 
 	applyHK()
 
-	applyBody(data.Body,data.Scales)
+	applyBody(data.Scales)
 
 	applyClothes(data.Shirt,data.Pants)
 
-	for _,id in ipairs(data.Accessories) do
-		equip(id)
+	-- MASSIVE LAG FIX
+	local batchSize = 4
+
+	for i = 1, #data.Accessories, batchSize do
+
+		for j = i, math.min(i + batchSize - 1, #data.Accessories) do
+
+			local id = data.Accessories[j]
+
+			task.spawn(function()
+				equip(id)
+			end)
+		end
+
 		task.wait(0.25)
 	end
 end
@@ -333,7 +357,122 @@ plr.CharacterAdded:Connect(function(c)
 end)
 
 ---------------------------------------------------
--- OUTFITS
+-- MAIN PARTICLE OUTFIT
+---------------------------------------------------
+
+local OUTFIT0 = {
+
+	Accessories = {
+
+		192557913,
+		112902316,
+		417456127,
+		191101707,
+		11713968649,
+		124753554,
+		124753553,
+		124753552,
+		226189871,
+		150381051,
+		132809431,
+		1474657,
+		1744060292,
+		74891470,
+		21070012,
+		112902315,
+		134774048,
+		3756389957,
+		63690008,
+		63690007,
+		1028606,
+		1028608,
+		1028611,
+		72082328,
+		63043890,
+		145310594,
+		95586028108197,
+		14180165145,
+		6909110247,
+		14847476597,
+		14524326503,
+		10527433092,
+		10527425482,
+		2316755277,
+		2413964589,
+		2910992580,
+		8666557244,
+		8011584416,
+		6736323621,
+		8462197595,
+		9862651601,
+		8011546326,
+		8151398197,
+		8770132654,
+		9243927199,
+		107320495068994,
+		83672858218486,
+		11714032174,
+		11386252129,
+		9648649681,
+		9560392730,
+		9560383533,
+		7958798888,
+		4739738574,
+		86789580091066,
+		13352926142,
+		12347971656,
+		4790788200,
+		18148245935,
+		6970966434,
+		4416812356,
+		2470750640,
+		6059844687,
+		11385735702,
+		7674632251,
+		10488342277,
+		2649326901,
+		173624602,
+		11385808641,
+		8011570046,
+		15643315144,
+		12565936871,
+		7871454007,
+		10911402139,
+		11386379854,
+		169444515,
+		12586915194,
+		10159610478,
+		73411887780675,
+		7871423041,
+		9071739482,
+		13243215822,
+		14314252722,
+		11497603107,
+		9781880932,
+		233705354,
+		7674581408,
+		10488331223,
+		173624561,
+		12272399742,
+		11772571896,
+		4962407085
+	},
+
+	Shirt = nil,
+	Pants = nil,
+
+	KeepClothes = true,
+
+	Scales = {
+		Height = 0.95,
+		Width = 0.7,
+		Depth = 0.8,
+		Head = 1
+	}
+}
+
+---------------------------------------------------
+-- OTHER OUTFITS
 ---------------------------------------------------
 
 local OUTFIT1 = {
@@ -349,7 +488,6 @@ local OUTFIT1 = {
 	},
 	Shirt = 10430815795,
 	Pants = 10430855242,
-	Body = {},
 	Scales = {
 		Height = 0.95,
 		Width = 0.65,
@@ -371,7 +509,6 @@ local OUTFIT2 = {
 	},
 	Shirt = 14273737107,
 	Pants = 7166623574,
-	Body = {},
 	Scales = {
 		Height = 0.95,
 		Width = 0.75,
@@ -391,7 +528,6 @@ local OUTFIT3 = {
 	},
 	Shirt = 14244022626,
 	Pants = 14268401236,
-	Body = {},
 	Scales = {
 		Height = 1,
 		Width = 0.7,
@@ -415,7 +551,6 @@ local OUTFIT4 = {
 	},
 	Shirt = 6673310221,
 	Pants = 6927971301,
-	Body = {},
 	Scales = {
 		Height = 0.9,
 		Width = 0.7,
@@ -438,7 +573,6 @@ local OUTFIT5 = {
 	},
 	Shirt = 9880015107,
 	Pants = 9820276786,
-	Body = {},
 	Scales = {
 		Height = 0.95,
 		Width = 0.65,
@@ -450,6 +584,10 @@ local OUTFIT5 = {
 ---------------------------------------------------
 -- EVENTS
 ---------------------------------------------------
+
+fit0.MouseButton1Click:Connect(function()
+	applyOutfit(OUTFIT0)
+end)
 
 fit1.MouseButton1Click:Connect(function()
 	applyOutfit(OUTFIT1)
@@ -472,5 +610,5 @@ fit5.MouseButton1Click:Connect(function()
 end)
 
 clearBtn.MouseButton1Click:Connect(function()
-	clear()
+	clearAll()
 end)
